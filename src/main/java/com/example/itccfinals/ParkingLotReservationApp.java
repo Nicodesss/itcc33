@@ -17,6 +17,10 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.types.ObjectId;
 
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.util.Date;
+
 public class ParkingLotReservationApp extends Application {
     private Button deleteMembershipButton;
     private GridPane gridPane;
@@ -26,6 +30,9 @@ public class ParkingLotReservationApp extends Application {
 
     private TextField membershipIdTextField = new TextField();
     TextField paymentIdTextField = new TextField();
+    private Button updateExpiryDateButton;
+    private TextField updateMembershipIdField;
+    private TextField newExpiryDateField;
 
 
     public static void main(String[] args) {
@@ -83,12 +90,48 @@ public class ParkingLotReservationApp extends Application {
         Button searchTransactionButton = new Button("Search Transaction");
         searchTransactionButton.setOnAction(e -> handleSearchTransaction());
         gridPane.add(searchTransactionButton, 0, 8);
+
+
+        updateExpiryDateButton = new Button("Update Expiry Date");
+        updateExpiryDateButton.setOnAction(e -> handleUpdateExpiryDate());
+        gridPane.add(updateExpiryDateButton, 0, 9);
+
+        updateMembershipIdField = new TextField();
+        gridPane.add(new Label("Membership ID to Update:"), 0, 10);
+        gridPane.add(updateMembershipIdField, 1, 10);
+
+        newExpiryDateField = new TextField();
+        gridPane.add(new Label("New Expiry Date:"), 0, 11);
+        gridPane.add(newExpiryDateField, 1, 11);
     }
+    private void handleUpdateExpiryDate() {
+        String membershipIdToUpdate = updateMembershipIdField.getText();
+        String newExpiryDate = newExpiryDateField.getText();
+
+        if (!membershipIdToUpdate.isEmpty() && !newExpiryDate.isEmpty()) {
+            // Call the update method
+            Membership.updateExpiryDate(membershipIdToUpdate, newExpiryDate);
+
+            // Additional logic or alert if needed
+            showAlert(Alert.AlertType.INFORMATION, "Update Successful", "Expiry date updated successfully!");
+        } else {
+            showAlert(Alert.AlertType.ERROR, "Input Error", "Membership ID and new expiry date cannot be empty.");
+        }
+    }
+
     private String getPaymentIdFromUserInput() {
         // Assuming you have a TextField named paymentIdTextField
         return paymentIdTextField.getText();
     }
+    private void handleUpdateMembership(String memberId, LocalDate newExpiryDate) throws ParseException {
+        // Convert LocalDate to Date
+        Date convertedDate = java.sql.Date.valueOf(newExpiryDate);
 
+        // Update the membership using the Membership class method
+        Membership.updateExpiryDate(memberId, String.valueOf(convertedDate));
+
+        showAlert(Alert.AlertType.INFORMATION, "Success", "Membership updated successfully!");
+    }
     private void handleSearchTransaction() {
         String paymentId = getPaymentIdFromUserInput();
 
