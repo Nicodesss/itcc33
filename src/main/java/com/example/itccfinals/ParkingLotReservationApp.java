@@ -8,17 +8,25 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.bson.types.ObjectId;
 
 public class ParkingLotReservationApp extends Application {
-
+    private Button deleteMembershipButton;
     private GridPane gridPane;
     private MongoCollection<Customer> customerCollection;
     private MongoCollection<Transaction> transactionCollection;
+    private MongoCollection<Membership> membershipCollection;
+
+    private TextField membershipIdTextField = new TextField();
+    TextField paymentIdTextField = new TextField();
+
 
     public static void main(String[] args) {
         launch(args);
@@ -26,6 +34,7 @@ public class ParkingLotReservationApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+
         // Initialize MongoDB
         MongoClient mongoClient = new MongoClient("localhost", 27017);
         CodecRegistry pojoCodecRegistry = CodecRegistries.fromProviders(
@@ -41,6 +50,12 @@ public class ParkingLotReservationApp extends Application {
 
         customerCollection = database.getCollection("customer", Customer.class);
         transactionCollection = database.getCollection("transaction", Transaction.class);
+        membershipCollection = database.getCollection("membership", Membership.class);
+
+        Membership.setMembershipCollection(membershipCollection);
+        Transaction.setTransactionCollection(transactionCollection);
+
+
 
         // Initialize GUI
         gridPane = createParkingGrid();
@@ -49,6 +64,63 @@ public class ParkingLotReservationApp extends Application {
         primaryStage.setTitle("Car Parking Reservation System");
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        gridPane.add(new Label("Payment ID:"), 0, 8);
+
+        gridPane.add(paymentIdTextField, 1, 8);
+
+
+// Inside the initializeUI() method or wherever appropriate
+        gridPane.add(new Label("Membership ID:"), 0, 7);
+        gridPane.add(membershipIdTextField, 1, 7);
+
+
+
+        deleteMembershipButton = new Button("Delete Membership");
+        deleteMembershipButton.setOnAction(e -> handleDeleteMembership());
+        gridPane.add(deleteMembershipButton, 0, 7);
+
+        Button searchTransactionButton = new Button("Search Transaction");
+        searchTransactionButton.setOnAction(e -> handleSearchTransaction());
+        gridPane.add(searchTransactionButton, 0, 8);
+    }
+    private String getPaymentIdFromUserInput() {
+        // Assuming you have a TextField named paymentIdTextField
+        return paymentIdTextField.getText();
+    }
+
+    private void handleSearchTransaction() {
+        String paymentId = getPaymentIdFromUserInput();
+
+        // Check if the input is not empty
+        if (!paymentId.isEmpty()) {
+            // Perform the search operation
+            Transaction foundTransaction = Transaction.findTransactionByPaymentId(paymentId);
+
+            // Check if the transaction is found
+            if (foundTransaction != null) {
+                // Display the transaction details in a new popup
+                showTransactionDetailsPopup(foundTransaction);
+            } else {
+                showAlert(Alert.AlertType.INFORMATION, "Search Result", "No transaction found with Payment ID: " + paymentId);
+            }
+        } else {
+            showAlert(Alert.AlertType.ERROR, "Input Error", "Payment ID cannot be empty.");
+        }
+    }
+
+    private void showTransactionDetailsPopup(Transaction transaction) {
+        TransactionPopup transactionPopup = new TransactionPopup(transaction.getParkingSlotNumber());
+        transactionPopup.fillFieldsWithTransaction(transaction);
+        transactionPopup.showAndWait();
+    }
+    private void handleAddMembership() {
+        MembershipPopup membershipPopup = new MembershipPopup(membershipCollection);
+        Membership newMembership = membershipPopup.showAndReturnMembership();
+        if (newMembership != null) {
+            // Additional logic if needed
+            System.out.println("New Membership: " + newMembership);
+        }
     }
 
     private GridPane createParkingGrid() {
@@ -56,6 +128,9 @@ public class ParkingLotReservationApp extends Application {
         gridPane.setAlignment(Pos.CENTER);
         gridPane.setHgap(10);
         gridPane.setVgap(10);
+        Button addMembershipButton = new Button("Add Membership");
+        addMembershipButton.setOnAction(e -> handleAddMembership());
+        gridPane.add(addMembershipButton, 0, 6);
 
         // Create 10 clickable green boxes for parking slots
         for (int i = 1; i <= 10; i++) {
@@ -97,8 +172,38 @@ public class ParkingLotReservationApp extends Application {
         } else {
             showAlert(Alert.AlertType.ERROR, "Customer Error", "Customer details are incomplete.");
         }
+
+
     }
 
+
+    private void handleDeleteMembership() {
+        String membershipIdToDelete = getMembershipIdFromUserInput();
+
+        // Check if the input is not empty
+        if (!membershipIdToDelete.isEmpty()) {
+            // Perform the delete operation
+            Membership.deleteMembershipById(membershipIdToDelete);
+
+            // You can add additional logic or show an alert if needed
+            showAlert(Alert.AlertType.INFORMATION, "Delete Successful", "Membership deleted successfully!");
+        } else {
+            showAlert(Alert.AlertType.ERROR, "Input Error", "Membership ID cannot be empty.");
+        }
+    }
+    private boolean isValidObjectId(String input) {
+        try {
+            new ObjectId(input);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    // Replace this method with the actual logic to get membership ID from the user input
+    private String getMembershipIdFromUserInput() {
+        return membershipIdTextField.getText();
+    }
     private void updateButtonStyle(int parkingSlotNumber, boolean reserved) {
         Button button = getButtonByParkingSlotNumber(parkingSlotNumber);
         if (button != null) {

@@ -15,6 +15,7 @@ public class TransactionPopup extends Stage {
 
     private TextField totalAmountField = new TextField();
     private TextField modeOfPaymentField = new TextField();
+    private TextField timeConsumptionField = new TextField();
     private final int parkingSlotNumber;
 
     public TransactionPopup(int parkingSlotNumber) {
@@ -32,12 +33,14 @@ public class TransactionPopup extends Stage {
         gridPane.add(totalAmountField, 1, 1);
         gridPane.add(new Label("Mode of Payment:"), 0, 2);
         gridPane.add(modeOfPaymentField, 1, 2);
+        gridPane.add(new Label("Time in Hours:"), 0, 3);
+        gridPane.add(timeConsumptionField, 1, 3);
 
         Button saveButton = new Button("Save");
         saveButton.setOnAction(e -> handleSave());
-        gridPane.add(saveButton, 1, 3);
+        gridPane.add(saveButton, 1, 4);
 
-        Scene scene = new Scene(gridPane, 300, 200);
+        Scene scene = new Scene(gridPane, 300, 250);
         setScene(scene);
         setTitle("Transaction Details");
         initModality(Modality.APPLICATION_MODAL);
@@ -45,7 +48,7 @@ public class TransactionPopup extends Stage {
     }
 
     private void handleSave() {
-        if ( totalAmountField.getText().isEmpty() || modeOfPaymentField.getText().isEmpty()) {
+        if (totalAmountField.getText().isEmpty() || modeOfPaymentField.getText().isEmpty() || timeConsumptionField.getText().isEmpty()) {
             showAlert(Alert.AlertType.ERROR, "Validation Error", "Please fill in required fields.");
         } else {
             close();
@@ -59,15 +62,20 @@ public class TransactionPopup extends Stage {
         alert.showAndWait();
     }
 
+    public void fillFieldsWithTransaction(Transaction transaction) {
+        totalAmountField.setText(transaction.getTotalAmount());
+        modeOfPaymentField.setText(transaction.getModeOfPayment());
+        // You can add more lines to set other fields based on your Transaction class
+    }
+
     public Transaction showAndWait(Customer customer) {
         showAndWait();
-        // Remove paymentId from the constructor call
         return new Transaction(
                 generateTransactionID(),
                 totalAmountField.getText(),
                 modeOfPaymentField.getText(),
                 parkingSlotNumber,
-                calculateTimeConsumption(),
+                Integer.parseInt(timeConsumptionField.getText()), // Assuming timeConsumption is an integer
                 generateTransactionDate(),
                 generateEmployeeID(),
                 customer.getMembershipId()
@@ -78,10 +86,6 @@ public class TransactionPopup extends Stage {
         return "TRN" + System.currentTimeMillis();
     }
 
-    private int calculateTimeConsumption() {
-        return 0; // Placeholder value, replace with actual implementation
-    }
-
     private String generateTransactionDate() {
         return "2023-11-27"; // Placeholder value, replace with actual implementation
     }
@@ -89,5 +93,4 @@ public class TransactionPopup extends Stage {
     private String generateEmployeeID() {
         return "EMP001"; // Placeholder value, replace with actual implementation
     }
-
 }
