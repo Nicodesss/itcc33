@@ -6,11 +6,9 @@ import com.mongodb.client.MongoDatabase;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -33,6 +31,7 @@ public class ParkingLotReservationApp extends Application {
     private Button updateExpiryDateButton;
     private TextField updateMembershipIdField;
     private TextField newExpiryDateField;
+
 
 
     public static void main(String[] args) {
@@ -117,6 +116,10 @@ public class ParkingLotReservationApp extends Application {
             showAlert(Alert.AlertType.ERROR, "Input Error", "Membership ID and new expiry date cannot be empty.");
         }
     }
+    private void showAlert(Alert.AlertType alertType, String title, String content) {
+        showAlert(alertType, title, content, null);
+    }
+
 
     private String getPaymentIdFromUserInput() {
         return paymentIdTextField.getText();
@@ -194,19 +197,16 @@ public class ParkingLotReservationApp extends Application {
                 customerCollection.insertOne(customer);
                 transactionCollection.insertOne(transaction);
 
-
-                showAlert(Alert.AlertType.INFORMATION, "Reservation Successful", "Parking slot reserved successfully!");
-
+                // Show the reservation success message with the PaymentId
+                showAlert(Alert.AlertType.INFORMATION, "Reservation Successful", "Parking slot reserved successfully!", transaction.getPaymentId());
 
                 updateButtonStyle(parkingSlotNumber, true);
             } else {
-                showAlert(Alert.AlertType.ERROR, "Transaction Error", "Transaction details are incomplete.");
+                showAlert(Alert.AlertType.ERROR, "Transaction Error", "Transaction details are incomplete.", null);
             }
         } else {
-            showAlert(Alert.AlertType.ERROR, "Customer Error", "Customer details are incomplete.");
+            showAlert(Alert.AlertType.ERROR, "Customer Error", "Customer details are incomplete.", null);
         }
-
-
     }
 
     private void handleDeleteMembership() {
@@ -255,10 +255,19 @@ public class ParkingLotReservationApp extends Application {
         return null;
     }
 
-    private void showAlert(Alert.AlertType alertType, String title, String content) {
+    private void showAlert(Alert.AlertType alertType, String title, String content, String additionalInfo) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);
         alert.setContentText(content);
+
+        if (additionalInfo != null) {
+            Label label = new Label("Additional Information:");
+            TextArea textArea = new TextArea(additionalInfo);
+            textArea.setEditable(false);
+            VBox vbox = new VBox(label, textArea);
+            alert.getDialogPane().setExpandableContent(vbox);
+        }
+
         alert.showAndWait();
     }
 }
