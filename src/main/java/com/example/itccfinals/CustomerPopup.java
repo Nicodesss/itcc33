@@ -59,7 +59,6 @@ public class CustomerPopup extends Stage {
 
     private void handleSave() {
         // Validate and save data if needed
-        // You can add more validation logic here
         if (phoneNumberField.getText().isEmpty() || nameField.getText().isEmpty()) {
             showAlert(Alert.AlertType.ERROR, "Validation Error", "Please fill in required fields.");
         } else {

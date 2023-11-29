@@ -77,7 +77,7 @@ public class ParkingLotReservationApp extends Application {
         gridPane.add(paymentIdTextField, 1, 8);
 
 
-// Inside the initializeUI() method or wherever appropriate
+
         gridPane.add(new Label("Membership ID:"), 0, 7);
         gridPane.add(membershipIdTextField, 1, 7);
 
@@ -112,7 +112,6 @@ public class ParkingLotReservationApp extends Application {
             // Call the update method
             Membership.updateExpiryDate(membershipIdToUpdate, newExpiryDate);
 
-            // Additional logic or alert if needed
             showAlert(Alert.AlertType.INFORMATION, "Update Successful", "Expiry date updated successfully!");
         } else {
             showAlert(Alert.AlertType.ERROR, "Input Error", "Membership ID and new expiry date cannot be empty.");
@@ -120,18 +119,9 @@ public class ParkingLotReservationApp extends Application {
     }
 
     private String getPaymentIdFromUserInput() {
-        // Assuming you have a TextField named paymentIdTextField
         return paymentIdTextField.getText();
     }
-    private void handleUpdateMembership(String memberId, LocalDate newExpiryDate) throws ParseException {
-        // Convert LocalDate to Date
-        Date convertedDate = java.sql.Date.valueOf(newExpiryDate);
 
-        // Update the membership using the Membership class method
-        Membership.updateExpiryDate(memberId, String.valueOf(convertedDate));
-
-        showAlert(Alert.AlertType.INFORMATION, "Success", "Membership updated successfully!");
-    }
     private void handleSearchTransaction() {
         String paymentId = getPaymentIdFromUserInput();
 
@@ -204,10 +194,10 @@ public class ParkingLotReservationApp extends Application {
                 customerCollection.insertOne(customer);
                 transactionCollection.insertOne(transaction);
 
-                // Update the UI or perform other actions as needed
+
                 showAlert(Alert.AlertType.INFORMATION, "Reservation Successful", "Parking slot reserved successfully!");
 
-                // Update button style
+
                 updateButtonStyle(parkingSlotNumber, true);
             } else {
                 showAlert(Alert.AlertType.ERROR, "Transaction Error", "Transaction details are incomplete.");
@@ -219,7 +209,6 @@ public class ParkingLotReservationApp extends Application {
 
     }
 
-
     private void handleDeleteMembership() {
         String membershipIdToDelete = getMembershipIdFromUserInput();
 
@@ -228,7 +217,6 @@ public class ParkingLotReservationApp extends Application {
             // Perform the delete operation
             Membership.deleteMembershipById(membershipIdToDelete);
 
-            // You can add additional logic or show an alert if needed
             showAlert(Alert.AlertType.INFORMATION, "Delete Successful", "Membership deleted successfully!");
         } else {
             showAlert(Alert.AlertType.ERROR, "Input Error", "Membership ID cannot be empty.");
